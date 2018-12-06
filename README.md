@@ -69,11 +69,11 @@ $card = [
     'name' => 'Holder name'
 ];
 $response = $gateway->purchase(
-    array(
+    [
             'amount' => '10.00',
             'reference' => '1',
-            'card' => $
-    )
+            'card' => $card
+    ]
 )->send(); //or authorize(...)
 
 if ($response->isSuccessful()) {
