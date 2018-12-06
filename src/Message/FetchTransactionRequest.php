@@ -15,18 +15,17 @@ class FetchTransactionRequest extends AbstractRequest
             $endPoint .= '/' . $data['transactionId'];
         }
 
-        $get = $this->httpClient->get(
-            $endPoint,
-            $headers
-        );
-
         try {
-            $get->send();
+            $get = $this->httpClient->request(
+                'GET',
+                $endPoint,
+                $headers
+            );
         } catch (\Exception $ex) {
 
         }
 
-        $response = json_decode(strval($get->getResponse()->getBody()), true);
+        $response = json_decode(strval($get->getBody()->getContents()), true);
 
         return new Response($this, $response);
     }
