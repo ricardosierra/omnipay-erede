@@ -53,30 +53,60 @@ The following gateway is provided by this package:
 use Omnipay\Omnipay;
 
 $gateway = Omnipay::create('Rede');
+
+// Thinks it's Rede specifc params
+$yourCV = '';
+$yourToken = "";
+
 $gateway->setMerchantId($yourCV); // Filiação
 $gateway->setMerchantKey($yourToken); // Token
 
-$card     = array('number' => '4242424242424242', 'expiryMonth' => '6', 'expiryYear' => '2030', 'cvv' => '123', 'name' => 'Holder name');
-$response = $gateway->purchase(array('amount' => '10.00', 'reference' => '1', 'card' => $card))->send(); //or authorize(...)
+$card = [
+    'number' => '4242424242424242',
+    'expiryMonth' => '6',
+    'expiryYear' => '2030',
+    'cvv' => '123',
+    'name' => 'Holder name'
+];
+$response = $gateway->purchase(
+    array(
+            'amount' => '10.00',
+            'reference' => '1',
+            'card' => $
+    )
+)->send(); //or authorize(...)
 
 if ($response->isSuccessful()) {
     // payment was successful: update database
     $transactionId = $response->getTransactionId();
 
     //with transactionId you can fetch...
-    $transactionInfo = $gateway->fetchTransaction(['transactionId' => $transactionId]); //you can pass 'reference' too
+    $transactionInfo = $gateway->fetchTransaction(
+        [
+            'transactionId' => $transactionId
+        ]
+    ); //you can pass 'reference' too
 
     //refund...
-    $response = $gateway->refund(['transactionId' => $transactionId, 'amount' => '10.00']);
+    $response = $gateway->refund(
+        [
+            'transactionId' => $transactionId,
+            'amount' => '10.00'
+        ]
+    );
 
     //or capture (don't work with purchase, you can only capture authorized requests)
-    $response = $gateway->capture(['transactionId' => $transactionId, 'amount' => '10.00']);
-
+    $response = $gateway->capture(
+        [
+            'transactionId' => $transactionId,
+            'amount' => '10.00'
+        ]
+    );
 } else {
     // payment failed: display message to customer
     $errorMessage = $response->getMessage();
     $errorCode    = $response->getCode();
-    ...
+    dd($errorMessage, $errorCode);
 }
 ```
 
