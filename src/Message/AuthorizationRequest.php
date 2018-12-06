@@ -10,14 +10,14 @@ class AuthorizationRequest extends AbstractRequest
     {
         $headers = $this->getDefaultHeaders();
 
-        $post = $this->httpClient->post(
-            $this->endpoint . '/transactions',
-            $headers,
-            json_encode($data)
-        );
-
         try {
-            $post->send();
+
+            $post = $this->httpClient->request('POST',
+                $this->endpoint . '/transactions',
+                $headers,
+                json_encode($data)
+            );
+            
         } catch (\Exception $ex) {}
 
         $response = json_decode(strval($post->getResponse()->getBody()), true);
