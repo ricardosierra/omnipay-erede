@@ -8,14 +8,14 @@ class CaptureRequest extends AbstractRequest
     {
         $headers = $this->getDefaultHeaders();
 
-        $put = $this->httpClient->put(
-            $this->endpoint . '/transactions/' . $this->getTransactionId(),
-            $headers,
-            json_encode($data)
-        );
-
         try {
-            $put->send();
+
+            $put = $this->httpClient->request('PUT',
+                $this->endpoint . '/transactions/' . $this->getTransactionId(),
+                $headers,
+                json_encode($data)
+            );
+
         } catch (\Exception $ex) {}
 
         $response = json_decode(strval($put->getResponse()->getBody()), true);
