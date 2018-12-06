@@ -89,14 +89,14 @@ use Omnipay\Erede\Message\CreateTokenRequest;
  */
 class Gateway extends AbstractGateway
 {
-    const BILLING_PLAN_FREQUENCY_DAY    = 'day';
-    const BILLING_PLAN_FREQUENCY_WEEK   = 'week';
-    const BILLING_PLAN_FREQUENCY_MONTH  = 'month';
-    const BILLING_PLAN_FREQUENCY_YEAR   = 'year';
+    const LIVE_ENDPOINT = 'https://api.userede.com.br/erede/v1';
+    const TEST_ENDPOINT = 'https://api-hom.userede.com.br/erede/v1';
+    const KEY_MERCHANT_ID  = 'merchantId';
+    const KEY_MERCHANT_KEY = 'merchantKey';
 
     public function getName()
     {
-        return 'Erede';
+        return 'Erede Gateway';
     }
 
     public function getShortName()
@@ -111,12 +111,32 @@ class Gateway extends AbstractGateway
      */
     public function getDefaultParameters()
     {
-        return array(
-            'apiKey' => '',
-            'username' => '',
-            'password' => '',
-            'testMode' => false
-        );
+        if ($this->getTestMode()) {
+            return [
+                self::KEY_MERCHANT_ID  => '50079557',
+                'testMode'    => true,
+                self::KEY_MERCHANT_KEY => '4913bb24a0284954be72c4258e229b86',
+                'installments' => 1,
+                'capture'      => true,
+                'kind'         => 'credit',
+                'origin'       => 1
+            ];
+        }
+        return [
+            self::KEY_MERCHANT_ID => null,
+            'testMode'   => false,
+            self::KEY_MERCHANT_KEY => null,
+            'installments' => 1,
+            'capture'      => true,
+            'kind'         => 'credit',
+            'origin'       => 1
+        ];
+        // return array(
+        //     'apiKey' => '',
+        //     'username' => '',
+        //     'password' => '',
+        //     'testMode' => false
+        // );
     }
 
     /**
@@ -135,21 +155,6 @@ class Gateway extends AbstractGateway
     /**
      * Set the gateway API Key.
      *
-     * Authentication is by means of a single secret API key set as
-     * the apiKey parameter when creating the gateway object.
-     *
-     * Erede accounts have test-mode API keys as well as live-mode
-     * API keys. These keys can be active at the same time. Data
-     * created with test-mode credentials will never hit the credit
-     * card networks and will never cost anyone money.
-     *
-     * Unlike some gateways, there is no test mode endpoint separate
-     * to the live mode endpoint, the Erede API endpoint is the same
-     * for test and for live.
-     *
-     * Setting the testMode flag on this gateway has no effect.  To
-     * use test mode just use your test mode API key.
-     *
      * @param string $value
      *
      * @return Gateway provides a fluent interface.
@@ -159,8 +164,33 @@ class Gateway extends AbstractGateway
         return $this->setParameter('apiKey', $value);
     }
 
+    public function encodeCredentials($merchantId, $merchantKey)
+    {
+        return base64_encode($merchantId . ':' . $merchantKey);
+    }
+
+    public function setMerchantId($merchantId)
+    {
+        $this->setParameter(self::KEY_MERCHANT_ID, $merchantId);
+    }
+
+    public function getMerchantId()
+    {
+        return $this->getParameter(self::KEY_MERCHANT_ID);
+    }
+
+    public function setMerchantKey($merchantKey)
+    {
+        $this->setParameter(self::KEY_MERCHANT_KEY, $merchantKey);
+    }
+
+    public function getMerchantKey()
+    {
+        return $this->getParameter(self::KEY_MERCHANT_KEY);
+    }
+
     /**
-     * Authorize Request.
+     * Create an authorize request.
      *
      * An Authorize request is similar to a purchase request but the
      * charge issues an authorization (or pre-authorization), and no money
@@ -181,9 +211,12 @@ class Gateway extends AbstractGateway
      *
      * @return \Omnipay\Erede\Message\AuthorizeRequest
      */
-    public function authorize(array $parameters = array())
+    public function authorize(array $parameters = [])
     {
-        return $this->createRequest('\Omnipay\Erede\Message\AuthorizeRequest', $parameters);
+        return $this->createRequest(
+            Message\AuthorizationRequest::class,
+            $parameters
+        );
     }
 
     /**
@@ -195,13 +228,16 @@ class Gateway extends AbstractGateway
      *
      * @return \Omnipay\Erede\Message\CaptureRequest
      */
-    public function capture(array $parameters = array())
+    public function capture(array $parameters = [])
     {
-        return $this->createRequest('\Omnipay\Erede\Message\CaptureRequest', $parameters);
+        return $this->createRequest(
+            \Omnipay\Rede\Message\CaptureRequest::class,
+            $parameters
+        );
     }
 
     /**
-     * Purchase request.
+     * Create an purchase request.
      *
      * To charge a credit card, you create a new charge object. If your API key
      * is in test mode, the supplied card won't actually be charged, though
@@ -222,13 +258,15 @@ class Gateway extends AbstractGateway
      *
      * @return \Omnipay\Erede\Message\PurchaseRequest
      */
-    public function purchase(array $parameters = array())
+    public function purchase(array $parameters = [])
     {
-        return $this->createRequest('\Omnipay\Erede\Message\PurchaseRequest', $parameters);
+        return $this->createRequest(
+            Message\PurchaseRequest::class,
+            $parameters
+        );
     }
-
     /**
-     * Refund Request.
+     * Create a refund request.
      *
      * When you create a new refund, you must specify a
      * charge to create it on.
@@ -245,7 +283,10 @@ class Gateway extends AbstractGateway
      */
     public function refund(array $parameters = array())
     {
-        return $this->createRequest('\Omnipay\Erede\Message\RefundRequest', $parameters);
+        return $this->createRequest(
+            \Omnipay\Rede\Message\RefundRequest::class,
+            $parameters
+        );
     }
 
     /**
@@ -261,13 +302,17 @@ class Gateway extends AbstractGateway
     }
 
     /**
-     * @param array $parameters
+     * Create a fetch transaction request.
      *
+     * @param array $parameters
      * @return \Omnipay\Erede\Message\FetchTransactionRequest
      */
-    public function fetchTransaction(array $parameters = array())
+    public function fetchTransaction(array $parameters = [])
     {
-        return $this->createRequest('\Omnipay\Erede\Message\FetchTransactionRequest', $parameters);
+        return $this->createRequest(
+            \Omnipay\Erede\Message\FetchTransactionRequest::class,
+            $parameters
+        );
     }
 
     //
@@ -641,5 +686,26 @@ class Gateway extends AbstractGateway
     public function deleteInvoiceItem(array $parameters = array())
     {
         return $this->createRequest('\Omnipay\Erede\Message\DeleteInvoiceItemRequest', $parameters);
+    }
+
+    /**
+     * 
+     */
+    protected function createRequest($class, array $parameters)
+    {
+        $gatewayParameters = $this->getParameters();
+        $merchantId        = isset($gatewayParameters[self::KEY_MERCHANT_ID])
+                           ? $gatewayParameters[self::KEY_MERCHANT_ID]
+                           : '';
+        $merchantKey        = isset($gatewayParameters[self::KEY_MERCHANT_KEY])
+                            ? $gatewayParameters[self::KEY_MERCHANT_KEY]
+                            : '';
+        $obj = new $class(
+            $this->httpClient,
+            $this->httpRequest,
+            $this->encodeCredentials($merchantId, $merchantKey),
+            $this->getEndpoint()
+        );
+        return $obj->initialize(array_replace($this->getParameters(), $parameters));
     }
 }
