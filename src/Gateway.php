@@ -231,7 +231,7 @@ class Gateway extends AbstractGateway
     public function capture(array $parameters = [])
     {
         return $this->createRequest(
-            \Omnipay\Rede\Message\CaptureRequest::class,
+            \Omnipay\Erede\Message\CaptureRequest::class,
             $parameters
         );
     }
@@ -284,7 +284,7 @@ class Gateway extends AbstractGateway
     public function refund(array $parameters = array())
     {
         return $this->createRequest(
-            \Omnipay\Rede\Message\RefundRequest::class,
+            \Omnipay\Erede\Message\RefundRequest::class,
             $parameters
         );
     }
