@@ -103,6 +103,11 @@ class Gateway extends AbstractGateway
     {
         return 'Erede';
     }
+    
+    public function getEndpoint()
+    {
+        return $this->getTestMode() ? self::TEST_ENDPOINT : self::LIVE_ENDPOINT;
+    }
 
     /**
      * Get the gateway parameters.
