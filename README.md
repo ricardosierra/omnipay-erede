@@ -57,7 +57,7 @@ $gateway = Omnipay::create('Rede');
 // Thinks it's Rede specifc params
 $yourCV = '';
 $yourToken = "";
-
+$gateway->setTestMode(true);
 $gateway->setMerchantId($yourCV); // Filiação
 $gateway->setMerchantKey($yourToken); // Token
 
